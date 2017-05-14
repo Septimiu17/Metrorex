@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Metrorex</string>
+    <string name="Username">Username</string>
+    <string name="username_hint">Username</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="create">Register User</string>
+    <string name="singing">Already registered? Sign in here.</string>
+</resources>
