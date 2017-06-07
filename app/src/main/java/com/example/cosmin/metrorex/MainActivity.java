@@ -126,7 +126,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             databaseReference.child(user.getUid()).setValue(userInformation);
 
-                            
+                            QRCodeWriter writer = new QRCodeWriter();
+                            try {
+                                BitMatrix bitMatrix = writer.encode(user.getUid(), BarcodeFormat.QR_CODE, 512, 512);
+                                int width = bitMatrix.getWidth();
+                                int height = bitMatrix.getHeight();
+                                Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+                                for (int x = 0; x < width; x++) {
+                                    for (int y = 0; y < height; y++) {
+                                        bmp.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                                    }
+                                }
+
+                                StorageReference userStorage=storageReference.child("BMP/"+firebaseAuth.getCurrentUser().getUid());
+                                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                bmp.compress(Bitmap.CompressFormat.PNG, 0 , bos);
+                                byte[] bitmapdata = bos.toByteArray();
+                                UploadTask uploadTask=userStorage.putBytes(bitmapdata);
+                                uploadTask.addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        e.printStackTrace();
+                                        Toast.makeText(MainActivity.this,"Upload failed for bmp",Toast.LENGTH_SHORT).show();
+
+                                    }
+                                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                        Toast.makeText(MainActivity.this,"Upload succes for bmp",Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+
+
                             } catch (WriterException e) {
                                 e.printStackTrace();
                             }
