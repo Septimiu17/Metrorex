@@ -7,4 +7,8 @@
     <string name="create">Register User</string>
     <string name="singing">Already registered? Sign in here.</string>
     <string name="tvlogin">Don\'t have an account yet ? Register here.</string>
+    <string name="tipabonament">Abonament:</string>
+    <string name="credit">Credit:</string>
+    <string name="cumpara">Cumpara Credit</string>
+    <string name="babonament">CUMPARA ABONAMENT</string>
 </resources>

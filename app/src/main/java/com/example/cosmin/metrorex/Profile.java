@@ -48,10 +48,14 @@ public class Profile extends AppCompatActivity implements View.OnClickListener {
     private ListView listViewCredit;
     private ListView listViewCalatorie;
     private ListView listViewAbonament;
+    private List<Integer> listCredit;
+    private List<Integer> listCalatorie;
     private List<Integer> listAbonament;
     private ImageView imageViewCloseButton;
     private Button buttonCalatorie;
     private Button buttonAbonament;
+    private int creditNew;
+    private int calatorieNew;
     private int abonamentNew;
 
 
@@ -113,7 +117,24 @@ public class Profile extends AppCompatActivity implements View.OnClickListener {
         buttonAbonament.setOnClickListener(this);
         imageViewCloseButton.setOnClickListener(this);
 
-    
+        listCredit = new ArrayList<>();
+        listCredit.add(1);
+        listCredit.add(5);
+        listCredit.add(10);
+        listCredit.add(20);
+        listCredit.add(100);
+        listCredit.add(200);
+        listCredit.add(500);
+        listCredit.add(1000);
+
+
+        listCalatorie = new ArrayList<>();
+        listCalatorie.add(1);
+        listCalatorie.add(2);
+        listCalatorie.add(10);
+        listCalatorie.add(20);
+        listCalatorie.add(50);
+        listCalatorie.add(100);
 
         listAbonament = new ArrayList<>();
         listAbonament.add(1);
@@ -123,7 +144,8 @@ public class Profile extends AppCompatActivity implements View.OnClickListener {
         listAbonament.add(180);
         listAbonament.add(365);
 
-       
+        listViewCredit = (ListView) findViewById(R.id.lv_credit);
+        listViewCalatorie = (ListView) findViewById(R.id.lv_credit);
         listViewAbonament = (ListView) findViewById(R.id.lv_credit);
 
 
@@ -152,10 +174,100 @@ public class Profile extends AppCompatActivity implements View.OnClickListener {
         Toast.makeText(this, "Informatia a fost salvata !", Toast.LENGTH_LONG).show();
     }
 
-    
+    private void cumparaCredit() {
+        listViewCalatorie.setVisibility(View.GONE);
+
+
+        listViewCredit.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(Profile.this, "You added "+listViewCredit.getItemAtPosition(position).toString()+" credit", Toast.LENGTH_SHORT).show();
+                creditNew=(Integer)listViewCredit.getItemAtPosition(position);
+
+
+                databaseReference = FirebaseDatabase.getInstance().getReference();
+                databaseReference.child(firebaseAuth.getCurrentUser().getUid()).
+                        addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                int credit = dataSnapshot.child("credit").getValue(Integer.class);
+                                int creditNou = credit + creditNew;
+                                databaseReference.child(dataSnapshot.getKey()).child("credit").setValue(creditNou);
+                                showUpdatedInfo();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
+
+            }
+        });
+
+
+        CreditAdapter creditAdapter = new CreditAdapter(listCredit, Profile.this);
+        listViewCredit.setAdapter(creditAdapter);
+        listViewCredit.setVisibility(View.VISIBLE);
+        imageViewCloseButton.setVisibility(View.VISIBLE);
+
+    }
+
+    private void cumparaCalatorie(){
+        listViewCalatorie.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                calatorieNew=(Integer)listViewCalatorie.getItemAtPosition(position);
+                databaseReference = FirebaseDatabase.getInstance().getReference();
+                databaseReference.child(firebaseAuth.getCurrentUser().getUid()).
+                        addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                int calatorie=dataSnapshot.child("numarCalatorii").getValue(Integer.class);
+                                int credit=dataSnapshot.child("credit").getValue(Integer.class);
+                                int calatorieNou=calatorie+calatorieNew;
+                                int creditNou=credit - 2 * calatorieNew;
+                                if(creditNou >= 0){
+                                    showUpdatedInfo();
+                                    UserInformation userInformation=new UserInformation(dataSnapshot.getValue(UserInformation.class));
+                                    userInformation.setCredit(creditNou);
+                                    userInformation.setNumarCalatorii(calatorieNou);
+                                    databaseReference.child(dataSnapshot.getKey()).setValue(userInformation);
+                                    Toast.makeText(Profile.this,"You added "+calatorieNew+" calatorii",Toast.LENGTH_SHORT).show();
+                                }
+                                else{
+                                    Toast.makeText(Profile.this,"You don't have enough credit",Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
+
+                            }
+
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+            }
+        });
+        listViewCredit.setVisibility(View.GONE);
+
+        CalatorieAdapter calatorieAdapter = new CalatorieAdapter(listCalatorie,Profile.this);
+        listViewCalatorie.setAdapter(calatorieAdapter);
+        listViewCalatorie.setVisibility(View.VISIBLE);
+        imageViewCloseButton.setVisibility(View.VISIBLE);
+
+
+
+
+    }
 
     private void cumparaAbonament(){
-       
+        listViewCalatorie.setVisibility(View.GONE);
+        listViewCredit.setVisibility(View.GONE);
 
         listViewAbonament.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -280,7 +392,7 @@ public class Profile extends AppCompatActivity implements View.OnClickListener {
             scan();
 
         if (view == buttonCumparaCredit) {
-           // cumparaCredit();
+            cumparaCredit();
         }
         if(view == imageViewCloseButton){
             listViewCredit.setVisibility(View.GONE);
@@ -290,7 +402,7 @@ public class Profile extends AppCompatActivity implements View.OnClickListener {
 
         }
         if(view == buttonCalatorie){
-            //cumparaCalatorie();
+            cumparaCalatorie();
         }
 
         if(view == buttonAbonament){
